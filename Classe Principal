@@ -1,0 +1,130 @@
+import java.util.Scanner;
+
+public class Principal {
+    static Cliente[] clientes = new Cliente[10];
+    static ItemMenu[] menu = new ItemMenu[10];
+    static Pedido[] pedidos = new Pedido[10];
+    static int clienteCount = 0;
+    static int pedidoCount = 0;
+    static Pedido carrinhoAtual;
+
+    public static void main(String[] args) {
+        try (Scanner scanner = new Scanner(System.in)) {
+            // Inicialização do menu
+            menu[0] = new ItemMenu("Pizza Margherita", "Pizza", 25.00);
+            menu[1] = new ItemMenu("Hambúrguer", "Sanduíche", 15.00);
+            menu[2] = new ItemMenu("Salada Caesar", "Salada", 12.00);
+
+            System.out.println("Bem-vindo ao Sabor Gourmet!");
+            System.out.println("Por favor, cadastre-se.");
+            System.out.println("======================");
+            System.out.println("Nome:");
+            String nome = scanner.nextLine();
+            System.out.println("Endereço:");
+            String endereco = scanner.nextLine();
+            System.out.println("Telefone:");
+            String telefone = scanner.nextLine();
+            System.out.println("Email:");
+            String email = scanner.nextLine();
+            System.out.println("Senha:");
+            String senha = scanner.nextLine();
+            System.out.println("======================");
+
+            Cliente cliente = new Cliente(nome, endereco, telefone, email, senha);
+            clientes[clienteCount] = cliente;
+            clienteCount++;
+
+            OUTER:
+            while (true) {
+                System.out.println("Escolha uma opção:");
+                System.out.println("1 – Visualizar Menu");
+                System.out.println("2 – Adicionar Item ao Carrinho");
+                System.out.println("3 – Ver carrinho");
+                System.out.println("4 – Finalizar Pedido");
+                System.out.println("5 – Acompanhar Status do Pedido");
+                System.out.println("6 – Sair");
+                System.out.print("Opção: ");
+                int opcao = scanner.nextInt();
+                scanner.nextLine();
+
+                switch (opcao) {
+                    case 1 -> {
+                        System.out.println("=========Menu=========");
+                        for (ItemMenu item : menu) {
+                            if (item != null) {
+                                item.getDetalhesItem();
+                            }
+                        }
+                        System.out.println("======================");
+                    }
+                    case 2 -> {
+                        if (carrinhoAtual == null) {
+                            carrinhoAtual = new Pedido(cliente);
+                        }
+                        System.out.println("Escolha o número do item para adicionar ao carrinho:");
+                        for (int i = 0; i < menu.length; i++) {
+                            if (menu[i] != null) {
+                                System.out.println((i + 1) + " - " + menu[i].getNome()); 
+                            }
+                        }
+                        int itemNumero = scanner.nextInt();
+                        scanner.nextLine(); 
+                        if (itemNumero > 0 && itemNumero <= menu.length && menu[itemNumero - 1] != null) {
+                            carrinhoAtual.adicionarItem(menu[itemNumero - 1]);
+                            System.out.println(menu[itemNumero - 1].getNome() + " adicionado ao carrinho.");
+                        } else {
+                            System.out.println("Item inválido.");
+                        }
+                    }
+                    case 3 -> {
+                        if (carrinhoAtual != null) {
+                            carrinhoAtual.visualizarPedido();
+                        } else {
+                            System.out.println("Carrinho vazio.");
+                        }
+                    }
+                    case 4 -> {
+                        if (carrinhoAtual != null) {
+                            carrinhoAtual.calcularTotal();
+                            if (pedidoCount >= pedidos.length) {
+                                // Se o array de pedidos estiver cheio, cria um novo array com o dobro do tamanho
+                                Pedido[] newPedidos = new Pedido[pedidos.length * 2];
+                                System.arraycopy(pedidos, 0, newPedidos, 0, pedidos.length);
+                                pedidos = newPedidos;
+                            }
+                            pedidos[pedidoCount] = carrinhoAtual;
+                            pedidoCount++;
+                            System.out.println("Pedido finalizado com sucesso!");
+                            carrinhoAtual = null;
+                        } else {
+                            System.out.println("Carrinho vazio.");
+                        }
+                    }
+                    case 5 -> {
+                        if (pedidoCount > 0) {
+                            System.out.println("Escolha o número do pedido para acompanhar:");
+                            for (int i = 0; i < pedidoCount; i++) {
+                                System.out.println((i + 1) + " - Pedido " + (i + 1));
+                            }
+                            int pedidoNumero = scanner.nextInt();
+                            scanner.nextLine(); 
+                            if (pedidoNumero > 0 && pedidoNumero <= pedidoCount) {
+                                Pedido pedido = pedidos[pedidoNumero - 1];
+                                System.out.println("Status do pedido: " + pedido.getStatus());
+                            } else {
+                                System.out.println("Pedido inválido.");
+                            }
+                        } else {
+                            System.out.println("Nenhum pedido realizado.");
+                        }
+                    }
+                    case 6 -> {
+                        System.out.println("Saindo...");
+                        break OUTER;
+                    }
+                    default -> System.out.println("Opção inválida.");
+                }
+            }
+        }
+    }
+}
